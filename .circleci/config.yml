@@ -41,7 +41,7 @@ jobs:
           command: |
             cd .circleci/terraform
             terraform init
-            teraform plan -out sf.tfplan
+            terraform plan -out sf.tfplan
             terraform apply "sf.tfplan"
 
 workflows:
