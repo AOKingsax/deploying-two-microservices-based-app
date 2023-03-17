@@ -27,13 +27,13 @@ commands:
 jobs:
   create-eks-cluster:
     docker:
-      - image: amazon/aws-cli
+      - image: cimg/python:3.10
     steps:
       - checkout
-      - run:
-          name: Install zip utility
-          command: |
-            yum install -y zip
+      # - run:
+      #     name: Install zip utility
+      #     command: |
+      #       yum install -y zip
       - install_awscli
       - install_terraform
       - run:
