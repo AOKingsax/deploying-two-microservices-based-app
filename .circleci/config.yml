@@ -43,3 +43,8 @@ jobs:
             terraform init
             teraform plan -out sf.tfplan
             terraform apply "sf.tfplan"
+
+workflows:
+  defaults:
+    jobs:
+      - create-eks-cluster
