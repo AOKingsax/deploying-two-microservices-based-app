@@ -1,0 +1,45 @@
+version: 2.1
+orbs:
+  slack: circleci/slack@4.12.1
+  aws-cli: circleci/aws-cli@3.1.4
+
+commands:
+  install_awscli:
+    description: Install AWS CLI v2
+    steps:
+      - run:
+          name: Install AWS CLI v2
+          command: |
+            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+            unzip awscliv2.zip
+            sudo ./aws/install
+
+  install_terraform:
+    description: install Terraform
+    steps:
+      - run:
+          name: install terraform
+          command: |
+            wget -O- https://apt.releases.hashicorp.com/gpg | gpg --dearmor | sudo tee /usr/share/keyrings/hashicorp-archive-keyring.gpg
+            echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
+            sudo apt update && sudo apt install terraform
+
+jobs:
+  create-eks-cluster:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run:
+          name: Install zip utility
+          command: |
+            yum install -y zip
+      - install_awscli
+      - install_terraform
+      - run:
+          name: terraform create eks cluster
+          command: |
+            cd .circleci/terraform
+            terraform init
+            teraform plan -out sf.tfplan
+            terraform apply "sf.tfplan"
