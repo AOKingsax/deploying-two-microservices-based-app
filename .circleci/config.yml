@@ -34,15 +34,16 @@ jobs:
       #     name: Install zip utility
       #     command: |
       #       yum install -y zip
-      - install_awscli
-      - install_terraform
+      # - install_awscli
+      # - install_terraform
       - run:
           name: terraform create eks cluster
           command: |
             cd .circleci/terraform
-            terraform init
-            terraform plan -out sf.tfplan
-            terraform apply "sf.tfplan"
+            # terraform init
+            # terraform plan -out sf.tfplan
+            # terraform apply "sf.tfplan"
+            terraform destroy "sf.tfplan" -y
 
 workflows:
   defaults:
