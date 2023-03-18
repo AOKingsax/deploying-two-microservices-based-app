@@ -30,12 +30,12 @@ jobs:
       - image: cimg/python:3.10
     steps:
       - checkout
-      # - run:
-      #     name: Install zip utility
-      #     command: |
-      #       yum install -y zip
-      # - install_awscli
-      # - install_terraform
+      - run:
+          name: Install zip utility
+          command: |
+            yum install -y zip
+      - install_awscli
+      - install_terraform
       - run:
           name: terraform create eks cluster
           command: |
