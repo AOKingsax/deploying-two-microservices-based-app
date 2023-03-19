@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
         - name: laravel
-          image: janortop5/laravel-app:latest
+          image: royalkingsax/laravel-app:latest
           ports:
             - containerPort: 80
           resources:
