@@ -24,28 +24,105 @@ commands:
             echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
             sudo apt update && sudo apt install terraform
 
+    install_kubectl:
+      description: install kubectl for kubernetes
+      steps:
+        -run:
+          name: install kubectl
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y ca-certificates curl
+            sudo apt-get install -y apt-transport-https
+            sudo curl -fsSLo /etc/apt/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg
+            echo "deb [signed-by=/etc/apt/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
+            sudo apt-get update
+            sudo apt-get install -y kubectl
+            kubectl version --client --output=yaml
+
 jobs:
-  create-eks-cluster:
+  build-docker-image:
+    docker:
+      - image: ubuntu-2204:2023.02.1
+    steps:
+      - run:
+          name: install docker
+          command: |
+            sudo apt update
+            sudo apt install docker.io -y
+            cd laravel-app/app
+            docker build -t royalkingsax/laravel-app:latest
+            docker login -u $REGISTRY_USER -p $REGISTRY_PASS
+            docker push royalkingsax/laravel-app:latest
+
+  create-and-run-eks-cluster:
     docker:
       - image: cimg/python:3.10
     steps:
       - checkout
-      # - run:
-      #     name: Install zip utility
-      #     command: |
-      #       yum install -y zip
+      - run:
+          name: Debian Frontend
+          command: |
+            export DEBIAN_FRONTEND=noninteractive
+
       - install_awscli
       - install_terraform
+
       - run:
           name: terraform create eks cluster
           command: |
             cd .circleci/terraform
-            # terraform init
-            # terraform plan -out sf.tfplan
-            # terraform apply "sf.tfplan"
-            terraform destroy "sf.tfplan" -y
+            terraform init
+            terraform plan -out sf.tfplan
+            terraform apply "sf.tfplan"
+      - run:
+          name: update the local kubeconfig file
+          command: |
+            aws eks update-kubeconfig --name --region us-east-1
+      - install_kubectl
+      - run: 
+          name: deploy laravel app to eks cluster
+          command: |
+            cd laravel-app/kubernetes
+            kubectl apply -f mysql-secret.yml
+            kubectl apply -f laravel-namespace.yml && kubectl apply -f laravel.yml && && kubectl apply -f mysql.yml
+            sleep 10
+            kubectl get pods --no-headers -o custom-columns=":metadata.name" -n laravel| grep laravel | xargs echo > laravel-pod-name
+            export LARAVEL_POD_NAME="$(cat ./laravel-pod-name)"
+            rm laravel-pod-name
+            kubectl exec -n laravel -it $LARAVEL_POD_NAME -- service php8.1-fpm restart
+            kubectl exec -n laravel -it $LARAVEL_POD_NAME -- service nginx reloadkubectl exec -n laravel -it $LARAVEL_POD_NAME -- php artisan migrate --seed
+            kubectl config set-context --current --namespace laravel
+      - run: 
+          name: install prometheus stack
+          command: |
+            helm install prometheus prometheus-community/kube-prometheus-stack
+      - run: 
+          name: configure service monitor for laravel app
+          command: |
+            cd laravel-app/kubernetes
+            kubectl apply -f laravel-service-monitor.yml
+            helm install mysql-exporter prometheus-community/prometheus-mysql-exporter -f values.yml
+            # kubectl apply -f laravel-ingress.yml
+            # kubectl apply -f prometheus-grafana-ingress.yml
+      - run: 
+          name: deploy sock shop app
+          command: |
+            cd sock-shop-app/kubernetes-app
+            kubectl apply -f deployment.yml
+      - run: 
+          name: configure service monitor for sock shop app
+          command: |
+            cd sock-shop-app/monitoring
+            kubectl apply -f cart-service-monitor.yml && kubectl apply -f catalogue-service-monitor.yml && kubectl apply -f frontend-service-monitor.yml && kubectl apply -f orders-service-monitor.yml && kubectl apply -f payment-service-monitor.yml && kubectl apply -f queue-master-service.yml && kubectl apply -f rabbitmq-service-monitor.yml && kubectl apply -f shipping-service-monitor.yml && kubectl apply -f user-service-monitor.yml
+            # kubectl apply -f front-end-ingress.yml
+            # helm install loki grafana/loki-stack --namespace loki --create-namespace --set grafana.enabled=true --set loki.isDefault=false
+            # kubectl get secret --namespace loki loki-grafana -o jsonpath="{.data.admin-password}" | base64 --decode ; echo
+            cd sock-shop-app/ingress
+            kubectl apply -f loki-ingress.yml
 
 workflows:
   defaults:
     jobs:
-      - create-eks-cluster
+      - build-docker-image
+      - create-eks-cluster:
+          requires: [build-docker-image]
