@@ -24,10 +24,10 @@ commands:
             echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
             sudo apt update && sudo apt install terraform
 
-    install_kubectl:
-      description: install kubectl for kubernetes
-      steps:
-        -run:
+  install_kubectl:
+    description: install kubectl for kubernetes
+    steps:
+      - run:
           name: install kubectl
           command: |
             sudo apt-get update
@@ -38,21 +38,22 @@ commands:
             sudo apt-get update
             sudo apt-get install -y kubectl
             kubectl version --client --output=yaml
-    install_helm:
-      description: installing helm for kubernetes package manager
-      steps:
-        - run:
-            name: install helm
-            command: |
-              curl https://baltocdn.com/helm/signing.asc | gpg --dearmor | tee /usr/share/keyrings/helm.gpg > /dev/null
-              apt-get install apt-transport-https --yes
-              echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/helm.gpg] https://baltocdn.com/helm/stable/debian/ all main" | tee /etc/apt/sources.list.d/helm-stable-debian.list
-              sudo apt update
-              sudo apt install helm
-              helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
-              helm repo add stable https://charts.helm.sh/stable
-              helm repo add grafana https://grafana.github.io/helm-charts
-              helm repo update
+
+  install_helm:
+    description: installing helm for kubernetes package manager
+    steps:
+      - run:
+          name: install helm
+          command: |
+            curl https://baltocdn.com/helm/signing.asc | gpg --dearmor | tee /usr/share/keyrings/helm.gpg > /dev/null
+            apt-get install apt-transport-https --yes
+            echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/helm.gpg] https://baltocdn.com/helm/stable/debian/ all main" | tee /etc/apt/sources.list.d/helm-stable-debian.list
+            sudo apt update
+            sudo apt install helm
+            helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+            helm repo add stable https://charts.helm.sh/stable
+            helm repo add grafana https://grafana.github.io/helm-charts
+            helm repo update
 
 jobs:
   build-docker-image:
@@ -82,7 +83,7 @@ jobs:
             cd .circleci/terraform
             terraform init
             terraform plan -out sf.tfplan
-            terraform apply "sf.tfplan"
+            # terraform apply "sf.tfplan"
 
   deploy-sock-shop-app:
     docker:
