@@ -66,8 +66,8 @@ jobs:
       - run:
           name: install docker
           command: |
-            sudo apt update
-            sudo apt install docker.io -y
+            apt update
+            apt install docker.io -y
             cd laravel-app/app
             docker build -t royalkingsax/laravel-app:latest
             docker login -u $REGISTRY_USER -p $REGISTRY_PASS
