@@ -186,7 +186,7 @@ workflows:
       #     requires: [create-eks-cluster]
       # - deploy-laravel-app:
       #     requires: [create-eks-cluster]
-      - monitoring-and-logging
-        # requires: [deploy-sock-shop-app, deploy-laravel-app]
-      # - ingress-entry-point:
-      #     requires: [monitoring-and-logging]
+      # - monitoring-and-logging:
+      #     requires: [deploy-sock-shop-app, deploy-laravel-app]
+      - ingress-entry-point
+        # requires: [monitoring-and-logging]
