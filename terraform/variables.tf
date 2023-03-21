@@ -56,7 +56,7 @@ variable "eks_sg" {
 }
 
 variable "cluster_name" {
-  default = "altschool-exam-eks-cluster"
+  default = "dev-eks-cluster"
 }
 
 variable "eks_cidr_block" {
