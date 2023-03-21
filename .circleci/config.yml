@@ -65,11 +65,6 @@ jobs:
       #     password: $DOCKERHUB_PASSWORD
     steps:
       - checkout
-      # - run:
-      #     name: install docker
-      #     command: |
-      #       apt update
-      #       apt install docker.io -y
       - run:
           name: build and push docker image
           command: |
@@ -88,7 +83,7 @@ jobs:
       - run:
           name: terraform create eks cluster
           command: |
-            cd .circleci/terraform
+            cd terraform
             terraform init
             terraform plan -out sf.tfplan
             # terraform apply "sf.tfplan"
