@@ -12,17 +12,17 @@ variable "public_subnets" {
   type = map(any)
   default = {
     "eks-public-1" = {
-      name       = "eks-public-1"
+      name       = "dev-pbs-1"
       az         = "us-east-1a"
       cidr_block = "10.0.1.0/24"
-      key        = "eks-public-1"
+      key        = "dev-pbs-1"
     },
 
     "eks-public-2" = {
-      name       = "eks-public-2"
+      name       = "dev-pbs-2"
       az         = "us-east-1b"
       cidr_block = "10.0.2.0/24"
-      key        = "eks-public-2"
+      key        = "dev-pbs-2"
     }
   }
 }
@@ -30,14 +30,14 @@ variable "private_subnets" {
   type = map(any)
   default = {
     "eks-private-1" = {
-      name       = "eks-private-1"
+      name       = "dev-pvs-1"
       az         = "us-east-1a"
       cidr_block = "10.0.3.0/24"
-      key        = "eks-private-1"
+      key        = "dev-pvs-1"
     },
 
     "eks-private-2" = {
-      name       = "eks-private-2"
+      name       = "-private-2"
       az         = "us-east-1b"
       cidr_block = "10.0.4.0/24"
       key        = "eks-private-2"
@@ -56,7 +56,7 @@ variable "eks_sg" {
 }
 
 variable "cluster_name" {
-  default = "altschool-exam-eks-cluster"
+  default = "dev-eks-cluster"
 }
 
 variable "eks_cidr_block" {
