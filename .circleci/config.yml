@@ -58,20 +58,20 @@ commands:
 jobs:
   build-docker-image:
     docker:
-      - image: ubuntu:22.04
+      - image: docker:23.0.1-cli
       # - image: royalkingsax/ubuntu:latest
       #   auth:
       #     username: royalkingsax
       #     password: $DOCKERHUB_PASSWORD
     steps:
       - checkout
-      - run:
-          name: install docker
-          command: |
-            apt update
-            apt install systemd -y
-            apt install docker.io -y
-            systemctl start docker
+      # - run:
+      #     name: install docker
+      #     command: |
+      #       apt update
+      #       apt install systemd -y
+      #       apt install docker.io -y
+      #       systemctl start docker
       - run:
           name: build and push docker image
           command: |
