@@ -164,7 +164,8 @@ workflows:
   dev-env:
     jobs:
       - build-docker-image
-      - create-eks-cluster
+      - create-eks-cluster:
+          requires: [build-docker-image]
       - deploy-sock-shop-app:
           requires: [create-eks-cluster]
       - deploy-laravel-app:
