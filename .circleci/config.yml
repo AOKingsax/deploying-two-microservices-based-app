@@ -65,16 +65,15 @@ jobs:
       #     password: $DOCKERHUB_PASSWORD
     steps:
       - checkout
-      - run:
-          name: install docker
-          command: |
-            apt update
-            apt install docker.io -y
+      # - run:
+      #     name: install docker
+      #     command: |
+      #       apt update
+      #       apt install docker.io -y
       - run:
           name: build and push docker image
           command: |
             cd laravel-app/app
-            sudo dockerd
             docker build -t royalkingsax/laravel-app:latest .
             docker login -u $REGISTRY_USER -p $REGISTRY_PASS
             docker push royalkingsax/laravel-app:latest
