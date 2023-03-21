@@ -69,8 +69,11 @@ jobs:
           command: |
             apt update
             apt install docker.io -y
+      - run:
+          name: build and push docker image
+          command: |
             cd laravel-app/app
-            docker build -t royalkingsax/laravel-app:latest
+            docker build -t royalkingsax/laravel-app:latest .
             docker login -u $REGISTRY_USER -p $REGISTRY_PASS
             docker push royalkingsax/laravel-app:latest
 
