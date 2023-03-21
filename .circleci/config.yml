@@ -69,7 +69,7 @@ jobs:
           name: install docker
           command: |
             apt update
-            apt install systemd
+            apt install systemd -y
             apt install docker.io -y
             systemctl start docker
       - run:
