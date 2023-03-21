@@ -58,10 +58,11 @@ commands:
 jobs:
   build-docker-image:
     docker:
-      - image: royalkingsax/ubuntu:latest
-        auth:
-          username: royalkingsax
-          password: $DOCKERHUB_PASSWORD
+      - image: ubuntu:20.04
+      # - image: royalkingsax/ubuntu:latest
+      #   auth:
+      #     username: royalkingsax
+      #     password: $DOCKERHUB_PASSWORD
     steps:
       - checkout
       - run:
@@ -73,9 +74,9 @@ jobs:
           name: build and push docker image
           command: |
             cd laravel-app/app
-            sudo docker build -t royalkingsax/laravel-app:latest .
-            sudo docker login -u $REGISTRY_USER -p $REGISTRY_PASS
-            sudo docker push royalkingsax/laravel-app:latest
+            docker build -t royalkingsax/laravel-app:latest .
+            docker login -u $REGISTRY_USER -p $REGISTRY_PASS
+            docker push royalkingsax/laravel-app:latest
 
   create-eks-cluster:
     docker:
@@ -194,7 +195,7 @@ jobs:
             kubectl apply -f ingress.yml
 
 workflows:
-  defaults:
+  dev-env:
     jobs:
       - build-docker-image
       - create-eks-cluster:
