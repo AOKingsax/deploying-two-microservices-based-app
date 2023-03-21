@@ -38,6 +38,21 @@ commands:
             sudo apt-get update
             sudo apt-get install -y kubectl
             kubectl version --client --output=yaml
+    install_helm:
+      description: installing helm for kubernetes package manager
+      steps:
+        - run:
+            name: install helm
+            command: |
+              curl https://baltocdn.com/helm/signing.asc | gpg --dearmor | tee /usr/share/keyrings/helm.gpg > /dev/null
+              apt-get install apt-transport-https --yes
+              echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/helm.gpg] https://baltocdn.com/helm/stable/debian/ all main" | tee /etc/apt/sources.list.d/helm-stable-debian.list
+              sudo apt update
+              sudo apt install helm
+              helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+              helm repo add stable https://charts.helm.sh/stable
+              helm repo add grafana https://grafana.github.io/helm-charts
+              helm repo update
 
 jobs:
   build-docker-image:
@@ -54,19 +69,13 @@ jobs:
             docker login -u $REGISTRY_USER -p $REGISTRY_PASS
             docker push royalkingsax/laravel-app:latest
 
-  create-and-run-eks-cluster:
+  create-eks-cluster:
     docker:
       - image: cimg/python:3.10
     steps:
       - checkout
-      - run:
-          name: Debian Frontend
-          command: |
-            export DEBIAN_FRONTEND=noninteractive
-
       - install_awscli
       - install_terraform
-
       - run:
           name: terraform create eks cluster
           command: |
@@ -74,51 +83,107 @@ jobs:
             terraform init
             terraform plan -out sf.tfplan
             terraform apply "sf.tfplan"
+
+  deploy-sock-shop-app:
+    docker:
+      - image: ubuntu-2204:2023.02.1
+    steps:
+      - checkout
+      - run:
+          name: install zip file compressor
+          command: |
+            sudo apt install zip -y
+      - install_awscli
+      - install_kubectl
       - run:
           name: update the local kubeconfig file
           command: |
-            aws eks update-kubeconfig --name --region us-east-1
+            aws eks update-kubeconfig --name altschool-exam-eks-cluster --region us-east-1
+      - run:
+          name: deploy sock shop app
+          command: |
+            cd sock-shop-app/kubernetes-app
+            kubectl apply -f deployment.yml
+
+  deploy-laravel-app:
+    docker:
+      - image: ubuntu-2204:2023.02.1
+    steps:
+      - checkout
+      - run:
+          name: install zip file compressor
+          command: |
+            sudo apt install zip -y
+      - install_awscli
       - install_kubectl
-      - run: 
+      - run:
+          name: update the local kubeconfig file
+          command: |
+            aws eks update-kubeconfig --name altschool-exam-eks-cluster --region us-east-1
+      - run:
           name: deploy laravel app to eks cluster
           command: |
             cd laravel-app/kubernetes
             kubectl apply -f mysql-secret.yml
-            kubectl apply -f laravel-namespace.yml && kubectl apply -f laravel.yml && && kubectl apply -f mysql.yml
+            kubectl apply -f laravel.yml && kubectl apply -f mysql.yml
             sleep 10
             kubectl get pods --no-headers -o custom-columns=":metadata.name" -n laravel| grep laravel | xargs echo > laravel-pod-name
             export LARAVEL_POD_NAME="$(cat ./laravel-pod-name)"
             rm laravel-pod-name
             kubectl exec -n laravel -it $LARAVEL_POD_NAME -- service php8.1-fpm restart
-            kubectl exec -n laravel -it $LARAVEL_POD_NAME -- service nginx reloadkubectl exec -n laravel -it $LARAVEL_POD_NAME -- php artisan migrate --seed
+            kubectl exec -n laravel -it $LARAVEL_POD_NAME -- service nginx reload
+            # kubectl exec -n laravel -it $LARAVEL_POD_NAME -- php artisan migrate --seed
+
+  monitoring-and-logging:
+    docker:
+      - image: ubuntu-2204:2023.02.1
+    steps:
+      - checkout
+      - run:
+          name: install zip file compressor
+          command: |
+            sudo apt install zip -y
+      - install_awscli
+      - install_kubectl
+      - run:
+          name: update the local kubeconfig file
+          command: |
+            aws eks update-kubeconfig --name altschool-exam-eks-cluster --region us-east-1
+      - run:
+          name: creating service monitor for laravel app
+          command: |
+            cd monitoring-and-logging
             kubectl config set-context --current --namespace laravel
-      - run: 
-          name: install prometheus stack
-          command: |
             helm install prometheus prometheus-community/kube-prometheus-stack
-      - run: 
-          name: configure service monitor for laravel app
-          command: |
-            cd laravel-app/kubernetes
-            kubectl apply -f laravel-service-monitor.yml
             helm install mysql-exporter prometheus-community/prometheus-mysql-exporter -f values.yml
-            # kubectl apply -f laravel-ingress.yml
-            # kubectl apply -f prometheus-grafana-ingress.yml
-      - run: 
-          name: deploy sock shop app
+            kubectl apply -f laravel-service-monitor.yml
+      - run:
+          name: creating service monitor for sock-shop app
           command: |
-            cd sock-shop-app/kubernetes-app
-            kubectl apply -f deployment.yml
-      - run: 
-          name: configure service monitor for sock shop app
+            cd monitoring-and-logging
+            kubectl apply -f all-service-monitor.yml
+            helm install loki grafana/loki-stack --namespace loki --create-namespace --set grafana.enabled=true --set loki.isDefault=false
+
+  ingress-entry-point:
+    docker:
+      - image: ubuntu-2204:2023.02.1
+    steps:
+      - checkout
+      - run:
+          name: install zip file compressor
           command: |
-            cd sock-shop-app/monitoring
-            kubectl apply -f cart-service-monitor.yml && kubectl apply -f catalogue-service-monitor.yml && kubectl apply -f frontend-service-monitor.yml && kubectl apply -f orders-service-monitor.yml && kubectl apply -f payment-service-monitor.yml && kubectl apply -f queue-master-service.yml && kubectl apply -f rabbitmq-service-monitor.yml && kubectl apply -f shipping-service-monitor.yml && kubectl apply -f user-service-monitor.yml
-            # kubectl apply -f front-end-ingress.yml
-            # helm install loki grafana/loki-stack --namespace loki --create-namespace --set grafana.enabled=true --set loki.isDefault=false
-            # kubectl get secret --namespace loki loki-grafana -o jsonpath="{.data.admin-password}" | base64 --decode ; echo
-            cd sock-shop-app/ingress
-            kubectl apply -f loki-ingress.yml
+            sudo apt install zip -y
+      - install_awscli
+      - install_kubectl
+      - run:
+          name: update the local kubeconfig file
+          command: |
+            aws eks update-kubeconfig --name altschool-exam-eks-cluster --region us-east-1
+      - run:
+          name: creating all entry ingress
+          command: |
+            cd ingress
+            kubectl apply -f ingress.yml
 
 workflows:
   defaults:
@@ -126,3 +191,11 @@ workflows:
       - build-docker-image
       - create-eks-cluster:
           requires: [build-docker-image]
+      - deploy-sock-shop-app:
+          requires: [create-eks-cluster]
+      - deploy-laravel-app:
+          requires: [create-eks-cluster]
+      - monitoring-and-logging:
+          requires: [deploy-sock-shop-app, deploy-laravel-app]
+      - ingress-entry-point:
+          requires: [monitoring-and-logging]
