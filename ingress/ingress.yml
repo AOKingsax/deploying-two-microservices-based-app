@@ -1,0 +1,60 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: sock-shop-ingress
+  namespace: sock-shop
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: sock-shop.kingsax.me
+      http:
+        paths:
+          - backend:
+              service:
+                name: front-end
+                port:
+                  number: 80
+            path: /
+            pathType: Prefix
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: laravel-ingress
+  namespace: laravel
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: laravel.kingsax.me
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: laravel-service
+                port:
+                  number: 80
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: loki-grafana-ingress
+  namespace: loki
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: loki-grafana.kingsax.me
+      http:
+        paths:
+          - backend:
+              service:
+                name: loki-grafana
+                port:
+                  number: 80
+            path: /
+            pathType: Prefix
