@@ -63,6 +63,7 @@ jobs:
           username: royalkingsax
           password: $DOCKERHUB_PASSWORD
     steps:
+      - checkout
       - run:
           name: install docker
           command: |
