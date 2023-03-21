@@ -89,8 +89,8 @@ jobs:
             # terraform apply "sf.tfplan"
 
   deploy-sock-shop-app:
-    docker:
-      - image: ubuntu-2204:2023.02.1
+    machine:
+      image: ubuntu-2204:2022.04.2
     steps:
       - checkout
       - run:
@@ -110,8 +110,8 @@ jobs:
             kubectl apply -f deployment.yml
 
   deploy-laravel-app:
-    docker:
-      - image: ubuntu-2204:2023.02.1
+    machine:
+      image: ubuntu-2204:2022.04.2
     steps:
       - checkout
       - run:
@@ -139,8 +139,8 @@ jobs:
             # kubectl exec -n laravel -it $LARAVEL_POD_NAME -- php artisan migrate --seed
 
   monitoring-and-logging:
-    docker:
-      - image: ubuntu-2204:2023.02.1
+    machine:
+      image: ubuntu-2204:2022.04.2
     steps:
       - checkout
       - run:
@@ -169,8 +169,8 @@ jobs:
             helm install loki grafana/loki-stack --namespace loki --create-namespace --set grafana.enabled=true --set loki.isDefault=false
 
   ingress-entry-point:
-    docker:
-      - image: ubuntu-2204:2023.02.1
+    machine:
+      image: ubuntu-2204:2022.04.2
     steps:
       - checkout
       - run:
