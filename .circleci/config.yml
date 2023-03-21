@@ -122,8 +122,9 @@ jobs:
             kubectl apply -f mysql-secret.yml
             kubectl apply -f mysql.yml
             sleep 6
-            kubectl get pods --no-headers -o custom-columns=":metadata.name" -n laravel| grep laravel | xargs echo > laravel-pod-name
+            kubectl get pods -o=name -n laravel | grep laravel | sed "s/^.\{4\}//" > laravel-pod-name
             export LARAVEL_POD_NAME="$(cat ./laravel-pod-name)"
+            cat laravel-pod-name
             rm laravel-pod-name
             kubectl exec -n laravel -it $LARAVEL_POD_NAME -- service php8.1-fpm restart
             kubectl exec -n laravel -it $LARAVEL_POD_NAME -- service nginx reload
@@ -173,14 +174,14 @@ jobs:
 workflows:
   dev-env:
     jobs:
-      - build-docker-image
-      - create-eks-cluster:
-          requires: [build-docker-image]
-      - deploy-sock-shop-app:
-          requires: [create-eks-cluster]
-      - deploy-laravel-app:
-          requires: [create-eks-cluster]
-      - monitoring-and-logging:
-          requires: [deploy-sock-shop-app, deploy-laravel-app]
-      - ingress-entry-point:
-          requires: [monitoring-and-logging]
+      # - build-docker-image
+      # - create-eks-cluster:
+      #     requires: [build-docker-image]
+      # - deploy-sock-shop-app:
+      #     requires: [create-eks-cluster]
+      - deploy-laravel-app
+        # requires: [create-eks-cluster]
+      # - monitoring-and-logging:
+      #     requires: [deploy-sock-shop-app, deploy-laravel-app]
+      # - ingress-entry-point:
+      #     requires: [monitoring-and-logging]
