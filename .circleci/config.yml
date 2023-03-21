@@ -151,7 +151,7 @@ jobs:
           command: |
             cd monitoring-and-logging
             kubectl config set-context --current --namespace laravel
-            helm install prometheus prometheus-community/kube-prometheus-stack
+            # helm install prometheus prometheus-community/kube-prometheus-stack
             helm install mysql-exporter prometheus-community/prometheus-mysql-exporter -f values.yml
             kubectl apply -f laravel-service-monitor.yml
       - run:
