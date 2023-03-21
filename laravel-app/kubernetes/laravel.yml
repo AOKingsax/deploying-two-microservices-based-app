@@ -1,6 +1,13 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: laravel
+  labels:
+    name: laravel
+
 ---
 apiVersion: apps/v1
-kind: Deployment 
+kind: Deployment
 metadata:
   name: laravel
   namespace: laravel
@@ -60,12 +67,12 @@ spec:
       protocol: TCP
 
 ---
-apiVersion: v1 
-kind: Service 
+apiVersion: v1
+kind: Service
 metadata:
   name: nginx-exporter-service
   namespace: laravel
-  labels: 
+  labels:
     app: nginx-metrics
 spec:
   selector:
