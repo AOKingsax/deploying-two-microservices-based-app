@@ -93,11 +93,6 @@ jobs:
       image: ubuntu-2204:2022.04.2
     steps:
       - checkout
-      - run:
-          name: install zip file compressor
-          command: |
-            sudo apt install zip -y
-      - install_awscli
       - install_kubectl
       - run:
           name: update the local kubeconfig file
@@ -114,11 +109,6 @@ jobs:
       image: ubuntu-2204:2022.04.2
     steps:
       - checkout
-      - run:
-          name: install zip file compressor
-          command: |
-            sudo apt install zip -y
-      - install_awscli
       - install_kubectl
       - run:
           name: update the local kubeconfig file
@@ -143,11 +133,6 @@ jobs:
       image: ubuntu-2204:2022.04.2
     steps:
       - checkout
-      - run:
-          name: install zip file compressor
-          command: |
-            sudo apt install zip -y
-      - install_awscli
       - install_kubectl
       - run:
           name: update the local kubeconfig file
@@ -173,11 +158,6 @@ jobs:
       image: ubuntu-2204:2022.04.2
     steps:
       - checkout
-      - run:
-          name: install zip file compressor
-          command: |
-            sudo apt install zip -y
-      - install_awscli
       - install_kubectl
       - run:
           name: update the local kubeconfig file
