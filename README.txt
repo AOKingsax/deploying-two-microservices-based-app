@@ -9,3 +9,5 @@ URL for the loki-grafana logging
 
 URL for the prometheus-grafana monitoring
 	prometheus-grafana.kingsax.me
+	username: admin
+	password: prom-operator
