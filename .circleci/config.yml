@@ -118,9 +118,10 @@ jobs:
           name: deploy laravel app to eks cluster
           command: |
             cd laravel-app/kubernetes
+            kubectl apply -f laravel.yml
             kubectl apply -f mysql-secret.yml
-            kubectl apply -f laravel.yml && kubectl apply -f mysql.yml
-            sleep 10
+            kubectl apply -f mysql.yml
+            sleep 6
             kubectl get pods --no-headers -o custom-columns=":metadata.name" -n laravel| grep laravel | xargs echo > laravel-pod-name
             export LARAVEL_POD_NAME="$(cat ./laravel-pod-name)"
             rm laravel-pod-name
