@@ -174,14 +174,14 @@ jobs:
 workflows:
   dev-env:
     jobs:
-      # - build-docker-image
-      # - create-eks-cluster:
-      #     requires: [build-docker-image]
-      # - deploy-sock-shop-app:
-      #     requires: [create-eks-cluster]
-      - deploy-laravel-app
-        # requires: [create-eks-cluster]
-      # - monitoring-and-logging:
-      #     requires: [deploy-sock-shop-app, deploy-laravel-app]
-      # - ingress-entry-point:
-      #     requires: [monitoring-and-logging]
+      - build-docker-image
+      - create-eks-cluster:
+          requires: [build-docker-image]
+      - deploy-sock-shop-app:
+          requires: [create-eks-cluster]
+      - deploy-laravel-app:
+          requires: [create-eks-cluster]
+      - monitoring-and-logging:
+          requires: [deploy-sock-shop-app, deploy-laravel-app]
+      - ingress-entry-point:
+          requires: [monitoring-and-logging]
