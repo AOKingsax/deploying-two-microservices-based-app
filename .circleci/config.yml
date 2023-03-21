@@ -58,7 +58,7 @@ commands:
 jobs:
   build-docker-image:
     docker:
-      - image: ubuntu:20.04
+      - image: ubuntu:22.04
       # - image: royalkingsax/ubuntu:latest
       #   auth:
       #     username: royalkingsax
