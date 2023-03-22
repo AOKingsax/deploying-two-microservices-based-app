@@ -144,7 +144,7 @@ jobs:
           command: |
             cd monitoring-and-logging
             kubectl apply -f all-service-monitor.yml
-            helm install loki grafana/loki-stack --namespace loki --create-namespace --set grafana.enabled=true --set loki.isDefault=false
+            helm install loki grafana/loki-stack --namespace loki --create-namespace --set grafana.enabled=true --set loki.isDefault=true
 
   ingress-entry-point:
     machine:
