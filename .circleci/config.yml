@@ -50,7 +50,7 @@ jobs:
       image: ubuntu-2204:2022.04.2
       # - image: royalkingsax/ubuntu:latest
       #   auth:
-      #     username: royalkingsax
+      #     username: $DOCKERHUB_USER
       #     password: $DOCKERHUB_PASSWORD
     steps:
       - checkout
@@ -59,7 +59,7 @@ jobs:
           command: |
             cd laravel-app/app
             docker build -t royalkingsax/laravel-app:latest .
-            docker login -u $REGISTRY_USER -p $REGISTRY_PASS
+            docker login -u $DOCKERHUB_USER -p $DOCKERHUB_PASSWORD
             docker push royalkingsax/laravel-app:latest
 
   create-eks-cluster:
@@ -144,7 +144,9 @@ jobs:
           command: |
             cd monitoring-and-logging
             kubectl apply -f all-service-monitor.yml
-            helm install loki grafana/loki-stack --namespace loki --create-namespace --set grafana.enabled=true --set loki.isDefault=true
+
+            helm install loki grafana/loki-stack --namespace loki --create-namespace --set grafana.enabled=true --set loki.isDefault=false
+            kubectl get secret --namespace loki loki-grafana -o jsonpath="{.data.admin-password}" | base64 --decode ; echo
 
   ingress-entry-point:
     machine:
