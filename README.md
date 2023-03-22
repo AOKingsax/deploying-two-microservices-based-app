@@ -1,4 +1,4 @@
-# Microservices [![CircleCI](https://dl.circleci.com/status-badge/img/gh/AOKingsax/deploying-two-microservices-based-app/tree/main.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/AOKingsax/deploying-two-microservices-based-app/tree/main)
+# Microservices 
 
 Automate CI/CD Pipelines, Monitoring, Metrics & Logging for two microservices based apps
 
