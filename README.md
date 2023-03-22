@@ -44,6 +44,17 @@ fast manner
 
 ---
 
+## Steps to recreate
+
+- Create a circleCI account
+- Get an AWS account and create a programmatic user with adminstratoraccess and save the access key and secret access key as environment variable on circleCI
+- Create a dockerhub account with user as DOCKERHUB_USER and password as DOCKERHUB_PASSWORD and save this as environment variable in your circleCI account
+- Setup the project repo in circleCI account
+- Replace the domain name in the "./terraform/variables.tf" file
+- Run the pipeline
+
+---
+
 ### CircleCI Continuous Delivery Pipeline
 
 ![pipeline](image/pipeline.jpg)
