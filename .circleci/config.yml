@@ -109,6 +109,7 @@ jobs:
             cd sock-shop-app/kubernetes-app
             kubectl apply -f deployment.yml
 
+      - install_terraform
       - destroy-environment
 
   deploy-laravel-app:
@@ -139,6 +140,7 @@ jobs:
             kubectl exec -n laravel -it $LARAVEL_POD_NAME -- service nginx reload
             # kubectl exec -n laravel -it $LARAVEL_POD_NAME -- php artisan migrate --seed
 
+      - install_terraform
       - destroy-environment
 
   monitoring-and-logging:
@@ -169,6 +171,7 @@ jobs:
             helm install loki grafana/loki-stack --namespace loki --create-namespace --set grafana.enabled=true --set loki.isDefault=false
             kubectl get secret --namespace loki loki-grafana -o jsonpath="{.data.admin-password}" | base64 --decode ; echo
 
+      - install_terraform
       - destroy-environment
 
   ingress-entry-point:
@@ -187,19 +190,20 @@ jobs:
             cd ingress
             kubectl apply -f ingress.yml
 
+      - install_terraform
       - destroy-environment
 
 workflows:
   dev-env:
     jobs:
-      - build-docker-image
-      - create-eks-cluster:
-          requires: [build-docker-image]
-      - deploy-sock-shop-app:
-          requires: [create-eks-cluster]
-      - deploy-laravel-app:
-          requires: [create-eks-cluster]
-      - monitoring-and-logging:
-          requires: [deploy-sock-shop-app, deploy-laravel-app]
-      - ingress-entry-point:
-          requires: [monitoring-and-logging]
+      # - build-docker-image
+      # - create-eks-cluster:
+      #     requires: [build-docker-image]
+      # - deploy-sock-shop-app:
+      #     requires: [create-eks-cluster]
+      - deploy-laravel-app
+          # requires: [create-eks-cluster]
+      # - monitoring-and-logging:
+      #     requires: [deploy-sock-shop-app, deploy-laravel-app]
+      # - ingress-entry-point:
+      #     requires: [monitoring-and-logging]
