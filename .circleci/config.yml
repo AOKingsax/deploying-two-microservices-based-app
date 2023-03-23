@@ -99,6 +99,7 @@ jobs:
     steps:
       - checkout
       - install_kubectl
+      - install_terraform
       - run:
           name: update the local kubeconfig file
           command: |
@@ -109,7 +110,6 @@ jobs:
             cd sock-shop-app/kubernetes-app
             kubectl apply -f deployment.yml
 
-      - install_terraform
       - destroy-environment
 
   deploy-laravel-app:
@@ -118,6 +118,7 @@ jobs:
     steps:
       - checkout
       - install_kubectl
+      - install_terraform
       - run:
           name: update the local kubeconfig file
           command: |
@@ -129,21 +130,20 @@ jobs:
             kubectl apply -f laravel.yml
             kubectl apply -f mysql-secret.yml
             kubectl apply -f mysql.yml
-            
+
 
             kubectl get pods -o=name -n laravel | grep laravel | sed "s/^.\{4\}//" > laravel-pod-name
             export LARAVEL_POD_NAME="$(cat ./laravel-pod-name)"
             cat laravel-pod-name
             rm laravel-pod-name
 
-            sleep 60
+            # sleep 60
 
             kubectl exec -n laravel -it $LARAVEL_POD_NAM -- service php8.1-fpm restart
             kubectl exec -n laravel -it $LARAVEL_POD_NAME -- php artisan key:generate
             kubectl exec -n laravel -it $LARAVEL_POD_NAME -- service nginx reload
             # kubectl exec -n laravel -it $LARAVEL_POD_NAME -- php artisan migrate --seed
 
-      - install_terraform
       - destroy-environment
 
   monitoring-and-logging:
@@ -152,6 +152,7 @@ jobs:
     steps:
       - checkout
       - install_kubectl
+      - install_terraform
       - install_helm
       - run:
           name: update the local kubeconfig file
@@ -174,7 +175,6 @@ jobs:
             helm install loki grafana/loki-stack --namespace loki --create-namespace --set grafana.enabled=true --set loki.isDefault=false
             kubectl get secret --namespace loki loki-grafana -o jsonpath="{.data.admin-password}" | base64 --decode ; echo
 
-      - install_terraform
       - destroy-environment
 
   ingress-entry-point:
@@ -183,6 +183,7 @@ jobs:
     steps:
       - checkout
       - install_kubectl
+      - install_terraform
       - run:
           name: update the local kubeconfig file
           command: |
@@ -193,7 +194,6 @@ jobs:
             cd ingress
             kubectl apply -f ingress.yml
 
-      - install_terraform
       - destroy-environment
 
 workflows:
@@ -205,7 +205,7 @@ workflows:
       # - deploy-sock-shop-app:
       #     requires: [create-eks-cluster]
       - deploy-laravel-app
-          # requires: [create-eks-cluster]
+        # requires: [create-eks-cluster]
       # - monitoring-and-logging:
       #     requires: [deploy-sock-shop-app, deploy-laravel-app]
       # - ingress-entry-point:
