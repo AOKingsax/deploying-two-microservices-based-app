@@ -7,7 +7,11 @@ URL for the laravel app
 URL for the loki-grafana logging
 	loki-grafana.kingsax.me
 
+	username: admin
+	password: 2NgbvW0umGrhhHw04fok6tQeJhzORwBT357HpuHV
+
 URL for the prometheus-grafana monitoring
 	prometheus-grafana.kingsax.me
+	
 	username: admin
 	password: prom-operator
