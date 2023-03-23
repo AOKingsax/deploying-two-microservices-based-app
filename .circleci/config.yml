@@ -63,7 +63,7 @@ jobs:
       # - image: royalkingsax/ubuntu:latest
       #   auth:
       #     username: $DOCKERHUB_USER
-      #     password: $DOCKERHUB_PASSWORD
+      ##     password: $DOCKERHUB_PASSWORD
     steps:
       - checkout
       - run:
