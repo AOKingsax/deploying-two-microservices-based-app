@@ -74,7 +74,11 @@ jobs:
             cd terraform
             terraform init
             terraform plan -out sf.tfplan
-            # terraform apply "sf.tfplan"
+            terraform apply "sf.tfplan"
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - project/terraform/*
 
   deploy-sock-shop-app:
     machine:
@@ -164,6 +168,18 @@ jobs:
             cd ingress
             kubectl apply -f ingress.yml
 
+  destroy-environment:
+    machine:
+      image: ubuntu-2204:2022.04.2
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ~/
+      - run:
+          name: destroy all resources and environment
+          command: |
+            terraform destroy --auto-approve
+
 workflows:
   dev-env:
     jobs:
@@ -178,3 +194,5 @@ workflows:
           requires: [deploy-sock-shop-app, deploy-laravel-app]
       - ingress-entry-point:
           requires: [monitoring-and-logging]
+      # - destroy-environment:
+      #     requires: [ingress-entry-point]
