@@ -63,8 +63,8 @@ jobs:
             docker push royalkingsax/laravel-app:latest
 
   create-eks-cluster:
-    docker:
-      - image: cimg/python:3.10
+    machine:
+      image: ubuntu-2204:2022.04.2
     steps:
       - checkout
       - install_terraform
