@@ -14,6 +14,17 @@ commands:
             echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
             sudo apt update && sudo apt install terraform
 
+  destroy-environment:
+    description: Destroy eks cluster environment
+    steps:
+      - attach_workspace:
+          at: ~/
+      - run:
+          name: Destroy environments
+          when: on_fail
+          command: |
+            terraform destroy --auto-approve
+
   install_kubectl:
     description: install kubectl for kubernetes
     steps:
@@ -80,6 +91,8 @@ jobs:
           paths:
             - project/terraform/*
 
+      - destroy-environment
+
   deploy-sock-shop-app:
     machine:
       image: ubuntu-2204:2022.04.2
@@ -95,6 +108,8 @@ jobs:
           command: |
             cd sock-shop-app/kubernetes-app
             kubectl apply -f deployment.yml
+
+      - destroy-environment
 
   deploy-laravel-app:
     machine:
@@ -124,6 +139,8 @@ jobs:
             kubectl exec -n laravel -it $LARAVEL_POD_NAME -- service nginx reload
             # kubectl exec -n laravel -it $LARAVEL_POD_NAME -- php artisan migrate --seed
 
+      - destroy-environment
+
   monitoring-and-logging:
     machine:
       image: ubuntu-2204:2022.04.2
@@ -152,6 +169,8 @@ jobs:
             helm install loki grafana/loki-stack --namespace loki --create-namespace --set grafana.enabled=true --set loki.isDefault=false
             kubectl get secret --namespace loki loki-grafana -o jsonpath="{.data.admin-password}" | base64 --decode ; echo
 
+      - destroy-environment
+
   ingress-entry-point:
     machine:
       image: ubuntu-2204:2022.04.2
@@ -168,17 +187,7 @@ jobs:
             cd ingress
             kubectl apply -f ingress.yml
 
-  destroy-environment:
-    machine:
-      image: ubuntu-2204:2022.04.2
-    steps:
-      - checkout
-      - attach_workspace:
-          at: ~/
-      - run:
-          name: destroy all resources and environment
-          command: |
-            terraform destroy --auto-approve
+      - destroy-environment
 
 workflows:
   dev-env:
@@ -194,5 +203,3 @@ workflows:
           requires: [deploy-sock-shop-app, deploy-laravel-app]
       - ingress-entry-point:
           requires: [monitoring-and-logging]
-      # - destroy-environment:
-      #     requires: [ingress-entry-point]
